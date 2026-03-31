@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arabic Google Trends Keyword Report — Airports Focus</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --card: #1a1d2e;
+    --card-hover: #1f2337;
+    --border: #2a2d3e;
+    --text: #e4e4e7;
+    --text-muted: #9ca3af;
+    --text-dim: #6b7280;
+    --accent-indigo: #6366f1;
+    --accent-purple: #a855f7;
+    --red: #ef4444;
+    --red-bg: rgba(239,68,68,0.1);
+    --red-border: rgba(239,68,68,0.3);
+    --amber: #f59e0b;
+    --amber-bg: rgba(245,158,11,0.1);
+    --amber-border: rgba(245,158,11,0.3);
+    --green: #22c55e;
+    --green-bg: rgba(34,197,94,0.1);
+    --pink: #ec4899;
+    --blue: #3b82f6;
+    --cyan: #06b6d4;
+    --orange: #f97316;
+    --purple: #a855f7;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    padding: 2rem;
+  }
+  .container { max-width: 1200px; margin: 0 auto; }
+
+  .header {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(168,85,247,0.15));
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    margin-bottom: 2rem;
+  }
+  .header h1 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #818cf8, #c084fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+  }
+  .header .subtitle { color: var(--text-muted); font-size: 1rem; margin-bottom: 1rem; }
+  .header .date-badge {
+    display: inline-block;
+    background: rgba(99,102,241,0.2);
+    border: 1px solid rgba(99,102,241,0.3);
+    color: #818cf8;
+    padding: 0.3rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+  .header .note { color: var(--text-dim); font-size: 0.8rem; margin-top: 0.75rem; }
+
+  .news-box {
+    background: linear-gradient(135deg, rgba(239,68,68,0.08), rgba(245,158,11,0.08));
+    border: 1px solid rgba(239,68,68,0.2);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+  }
+  .news-box h2 { font-size: 1.1rem; color: var(--red); margin-bottom: 1rem; }
+  .news-item { padding: 0.5rem 0; border-bottom: 1px solid rgba(239,68,68,0.1); font-size: 0.9rem; }
+  .news-item:last-child { border-bottom: none; }
+  .news-item strong { color: var(--text); }
+  .news-item span { color: var(--text-muted); }
+
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    text-align: center;
+  }
+  .stat-number {
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #818cf8, #c084fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .stat-label { color: var(--text-muted); font-size: 0.8rem; margin-top: 0.25rem; }
+
+  .exec-summary {
+    background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(168,85,247,0.1));
+    border: 1px solid rgba(99,102,241,0.2);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--text-muted);
+  }
+  .exec-summary strong { color: var(--text); }
+
+  .alert { border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; display: flex; align-items: flex-start; gap: 0.75rem; }
+  .alert-urgent { background: var(--red-bg); border: 1px solid var(--red-border); }
+  .alert-warn { background: var(--amber-bg); border: 1px solid var(--amber-border); }
+  .alert-icon { font-size: 1.3rem; flex-shrink: 0; }
+  .alert-text { font-size: 0.9rem; }
+  .alert-text strong { color: var(--text); }
+  .alert-text span { color: var(--text-muted); }
+
+  .section-title { font-size: 1.3rem; font-weight: 700; margin: 2.5rem 0 1.25rem 0; padding-bottom: 0.5rem; border-bottom: 2px solid var(--border); }
+
+  .keyword-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 0.75rem;
+    display: grid;
+    grid-template-columns: 40px 1fr auto;
+    gap: 1rem;
+    align-items: start;
+    transition: background 0.2s;
+  }
+  .keyword-card:hover { background: var(--card-hover); }
+  .keyword-card.p-write { border-left: 4px solid var(--red); }
+  .keyword-card.p-audit { border-left: 4px solid var(--red); }
+  .keyword-card.p-high { border-left: 4px solid var(--amber); }
+  .keyword-card.p-med { border-left: 4px solid var(--text-dim); }
+
+  .kw-rank { font-size: 1.4rem; font-weight: 800; color: var(--text-dim); text-align: center; padding-top: 0.2rem; }
+  .kw-arabic {
+    font-family: 'Noto Sans Arabic', 'Inter', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    direction: rtl;
+    text-align: right;
+    color: #fff;
+    margin-bottom: 0.2rem;
+  }
+  .kw-translit { font-size: 0.8rem; color: var(--accent-indigo); font-style: italic; margin-bottom: 0.4rem; }
+  .kw-note { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
+  .kw-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
+
+  .tag {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .t-bo { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+  .t-cr { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
+  .t-ap { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
+  .t-sa { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
+  .t-pw { background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.4); }
+  .t-pa { background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+  .t-ph { background: rgba(245,158,11,0.2); color: #fcd34d; border: 1px solid rgba(245,158,11,0.4); }
+  .t-pm { background: rgba(107,114,128,0.15); color: var(--text-muted); border: 1px solid rgba(107,114,128,0.3); }
+  .t-nd { background: rgba(99,102,241,0.15); color: #818cf8; border: 1px solid rgba(99,102,241,0.3); }
+  .t-cat { background: rgba(107,114,128,0.15); color: var(--text-muted); border: 1px solid rgba(107,114,128,0.3); }
+  .t-pr { background: rgba(6,182,212,0.15); color: var(--cyan); border: 1px solid rgba(6,182,212,0.3); }
+  .t-de { background: rgba(59,130,246,0.15); color: var(--blue); border: 1px solid rgba(59,130,246,0.3); }
+  .t-hi { background: rgba(245,158,11,0.15); color: var(--amber); border: 1px solid rgba(245,158,11,0.3); }
+  .t-sp { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+
+  .kw-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 0.4rem; min-width: 110px; }
+  .kw-regions { font-size: 0.72rem; color: var(--text-dim); text-align: right; }
+
+  .clusters-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 2rem; }
+  .cluster-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem 1.5rem; }
+  .cluster-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 0.4rem; }
+  .cluster-desc { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem; }
+  .cluster-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .cluster-kw {
+    display: inline-block;
+    background: rgba(99,102,241,0.1);
+    border: 1px solid rgba(99,102,241,0.2);
+    color: #a5b4fc;
+    padding: 0.2rem 0.6rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-family: 'Noto Sans Arabic', 'Inter', sans-serif;
+    direction: rtl;
+  }
+  .cluster-kw .g { color: var(--red); font-family: 'Inter', sans-serif; font-size: 0.65rem; margin-right: 0.3rem; direction: ltr; display: inline; }
+
+  .footer {
+    margin-top: 3rem;
+    padding: 1.5rem 2rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+  }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .clusters-grid { grid-template-columns: 1fr; }
+    .keyword-card { grid-template-columns: 30px 1fr; }
+    .kw-meta { align-items: flex-start; flex-direction: row; flex-wrap: wrap; min-width: unset; grid-column: 2; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>Arabic Google Trends Keyword Report</h1>
+    <div class="subtitle">Wego Blog &mdash; Rising Arabic-language travel queries: <strong>Airports Focus</strong></div>
+    <div class="date-badge">Research Date: 31 March 2026</div>
+    <div class="note">Keywords shown in Arabic script with transliterations &bull; Worldwide scope (MENA + diaspora)</div>
+  </div>
+
+  <div class="news-box">
+    <h2>&#x1F4F0; News Context Driving These Trends</h2>
+    <div class="news-item"><strong>US-Israeli strikes on Iran trigger Gulf-wide airport chaos</strong> &mdash; <span>5,400+ flights cancelled across 7 Gulf airports. Dubai, Bahrain, Kuwait hardest hit. Massive Arabic search demand for airport status.</span></div>
+    <div class="news-item"><strong>Kuwait airport closed &amp; damaged by drone strikes</strong> &mdash; <span>Fuel tank fire, radar system damaged. Only fully closed commercial airport as of Mar 28. No reopening date announced.</span></div>
+    <div class="news-item"><strong>Dubai airport partially reopened, limited operations</strong> &mdash; <span>Emirates at ~60% capacity (~300 flights/day). Multiple search spikes for "Is Dubai airport open/closed" in Arabic.</span></div>
+    <div class="news-item"><strong>Bahrain airport worst-hit operationally</strong> &mdash; <span>91 cancellations on Mar 28 (75-80% of daily ops). Gulf Air relocated to Dammam as temporary hub.</span></div>
+    <div class="news-item"><strong>Ben Gurion airport closed until April 16</strong> &mdash; <span>Extended closure officially announced. Airspace closures over Iran, Iraq, Kuwait, Israel, Bahrain affect global routing.</span></div>
+    <div class="news-item"><strong>Flynas extends Gulf route suspensions until April 15</strong> &mdash; <span>Flights to Abu Dhabi, Dubai, Sharjah, Doha, Kuwait, Bahrain, Iraq, and Syria all suspended.</span></div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-number">9</div><div class="stat-label">Write Now / Audit</div></div>
+    <div class="stat-card"><div class="stat-number">24</div><div class="stat-label">Total Arabic Keywords</div></div>
+    <div class="stat-card"><div class="stat-number">5</div><div class="stat-label">Thematic Clusters</div></div>
+    <div class="stat-card"><div class="stat-number">19</div><div class="stat-label">News-Derived Finds</div></div>
+  </div>
+
+  <div class="exec-summary">
+    <strong>The Middle East conflict has created the largest Arabic airport search spike in years.</strong> Every major Gulf airport keyword is showing "Breakout" growth (5,000%+). The dominant themes are: airport status checks (<strong>"&#x0647;&#x0644; &#x0645;&#x0637;&#x0627;&#x0631; X &#x0645;&#x0641;&#x062A;&#x0648;&#x062D;/&#x0645;&#x063A;&#x0644;&#x0642;"</strong>), airspace closures (<strong>"&#x0627;&#x0644;&#x0645;&#x062C;&#x0627;&#x0644; &#x0627;&#x0644;&#x062C;&#x0648;&#x0649;"</strong>), and safety concerns (<strong>"&#x0647;&#x0644; &#x0627;&#x0644;&#x0633;&#x0641;&#x0631; &#x0622;&#x0645;&#x0646;"</strong>). Critically, <strong>diaspora signals are strong</strong> &mdash; Arabic speakers in Germany, UK, and Australia are searching these terms. Wego's Arabic content can capture global demand. <strong>Key priority:</strong> airport status articles for every affected hub, airspace closure explainers, and "is it safe to travel" guides in Arabic.
+  </div>
+
+  <h2 class="section-title">&#x1F6A8; Time-Sensitive Alerts</h2>
+
+  <div class="alert alert-urgent">
+    <div class="alert-icon">&#x1F534;</div>
+    <div class="alert-text"><strong>PUBLISH NOW: Dubai airport status article in Arabic</strong> &mdash; <span>5 breakout query variants ("&#x0636;&#x0631;&#x0628; &#x0645;&#x0637;&#x0627;&#x0631; &#x062F;&#x0628;&#x064A;", "&#x0645;&#x0637;&#x0627;&#x0631; &#x062F;&#x0628;&#x064A; &#x0645;&#x0641;&#x062A;&#x0648;&#x062D;", "&#x0647;&#x0644; &#x0645;&#x0637;&#x0627;&#x0631; &#x062F;&#x0628;&#x064A; &#x0645;&#x063A;&#x0644;&#x0642;", "&#x0645;&#x0637;&#x0627;&#x0631; &#x062F;&#x0628;&#x064A; &#x0634;&#x063A;&#x0627;&#x0644;", "&#x0647;&#x0644; &#x062A;&#x0645; &#x0636;&#x0631;&#x0628; &#x0645;&#x0637;&#x0627;&#x0631; &#x062F;&#x0628;&#x064A;"). Capture formal AND colloquial forms.</span></div>
+  </div>
+  <div class="alert alert-urgent">
+    <div class="alert-icon">&#x1F534;</div>
+    <div class="alert-text"><strong>AUDIT: Kuwait airport Arabic article on rahhal.wego.com</strong> &mdash; <span>Article exists but needs March 28 drone attack, fuel tank fire, and radar damage updates. Only fully closed commercial airport.</span></div>
+  </div>
+  <div class="alert alert-urgent">
+    <div class="alert-icon">&#x1F534;</div>
+    <div class="alert-text"><strong>WRITE NOW: Arabic airspace tracker article</strong> &mdash; <span>"&#x0641;&#x062A;&#x062D; &#x0627;&#x0644;&#x0645;&#x062C;&#x0627;&#x0644; &#x0627;&#x0644;&#x062C;&#x0648;&#x064A;" is breakout. Cover Qatar, Kuwait, Jordan, and Gulf airspace status in one comprehensive Arabic article.</span></div>
+  </div>
+  <div class="alert alert-warn">
+    <div class="alert-icon">&#x1F7E0;</div>
+    <div class="alert-text"><strong>WRITE: Bahrain airport status in Arabic</strong> &mdash; <span>"&#x0627;&#x063A;&#x0644;&#x0627;&#x0642; &#x0645;&#x0637;&#x0627;&#x0631; &#x0627;&#x0644;&#x0628;&#x062D;&#x0631;&#x064A;&#x0646;" and "&#x0636;&#x0631;&#x0628; &#x0645;&#x0637;&#x0627;&#x0631; &#x0627;&#x0644;&#x0628;&#x062D;&#x0631;&#x064A;&#x0646;" both breakout. 91 cancellations in a single day.</span></div>
+  </div>
+  <div class="alert alert-warn">
+    <div class="alert-icon">&#x1F7E0;</div>
+    <div class="alert-text"><strong>AUDIT: "Is travel safe" Arabic guides</strong> &mdash; <span>Sustained interest since Mar 8 with strong diaspora signal (UK, Germany as breakout regions). Check all Arabic safety articles are current.</span></div>
+  </div>
+
+  <h2 class="section-title">&#x1F4CA; Prioritized Arabic Keywords</h2>
+
+  <div class="keyword-card p-write"><div class="kw-rank">1</div><div class="kw-body"><div class="kw-arabic">ضرب مطار دبي</div><div class="kw-translit">darb matar dubai</div><div class="kw-note">Dubai airport strike/attack. Massive breakout search driven by Iranian drone strike on Dubai airport fuel tank. Direct news-event query with high CTR potential for crisis content.</div><div class="kw-tags"><span class="tag t-bo">BREAKOUT</span><span class="tag t-cr">CRISIS / AIRPORT</span><span class="tag t-pw">WRITE NOW</span><span class="tag t-nd">NEWS-DERIVED</span></div></div><div class="kw-meta"><div class="kw-regions">SA, AE, EG, KW, JO</div></div></div>
+
+  <div class="keyword-card p-write"><div class="kw-rank">2</div><div class="kw-body"><div class="kw-arabic">مطار دبي مفتوح</div><div class="kw-translit">matar dubai maftuh</div><div class="kw-note">Is Dubai airport open? Direct status query. Pair with "هل مطار دبي مغلق" &mdash; searchers use both. Ideal for Wego Arabic airport status article.</div><div class="kw-tags"><span class="tag t-bo">BREAKOUT</span><span class="tag t-ap">AIRPORT STATUS</span><span class="tag t-pw">WRITE NOW</span><span class="tag t-nd">NEWS-DERIVED</span></div></div><div class="kw-meta"><div class="kw-regions">AE, SA, EG, DE, UK</div></div></div>
+
+  <div class="keyword-card p-write"><div class="kw-rank">3</div><div class="kw-body"><div class="kw-arabic">هل مطار دبي مغلق</div><div class="kw-translit">hal matar dubai mughlaq</div><div class="kw-note">Is Dubai airport closed? Formal Arabic variant. Target both this and "مطار دبي مفتوح" in one article for maximum Arabic SEO coverage.</div><div class="kw-tags"><span class="tag t-bo">BREAKOUT</span><span class="tag t-ap">AIRPORT STATUS</span><span class="tag t-pw">WRITE NOW</span><span class="tag t-nd">NEWS-DERIVED</span></div></div><div class="kw-meta"><div class="kw-regions">AE, SA, EG, JO, KW</div></div></div>
+
+  <div class="keyword-card p-write"><div class="kw-rank">4</div><div class="kw-body"><div class="kw-arabic">مطار دبي شغال</div><div class="kw-translit">matar dubai shaghghal</div><div class="kw-note"><strong>Colloquial Gulf Arabic!</strong> "Is Dubai airport working?" &mdash; how Gulf speakers casually search. Include this phrasing in Arabic content to capture colloquial SEO.</div><div class="kw-tags"><span class="tag t-bo">BREAKOUT</span><span class="tag t-ap">AIRPORT STATUS</span><span class="tag t-pw">WRITE NOW</span><span class="tag t-nd">NEWS-DERIVED</span></div></div><div class="kw-meta"><div class="kw-regions">AE, SA, KW, QA, BH</div></div></div>
+
+  <div class="keyword-card p-write"><div class="kw-rank">5</div><div class="kw-body"><div class="kw-arabic">فتح المجال الجوي</div><div class="kw-translit">fath al-majal al-jawwi</div><div class="kw-note">Airspace reopening. The #1 rising query for "المجال الجوي". People want to know WHEN airspace reopens. Create comprehensive Arabic airspace tracker.</div><div class="kw-tags"><span class="tag t-bo">BREAKOUT</span><span class="tag t-cr">CRISIS / AIRSPACE</span><span class="tag t-pw">WRITE NOW</span><span class="tag t-nd">NEWS-DERIVED</span></div></div><div class="kw-meta"><div class="kw-regions">SA, AE, KW, QA, JO</div></div></div>
+
+  <div class="keyword-card p-audit"><div class="kw-rank">6</div><div class="kw-body"><div class="kw-arabic">إغلاق مطار الكويت</div><div class="kw-translit">ighlaq matar alkuwait</div><div class="kw-note">Kuwait airport closure. Only fully closed commercial airport. Wego Arabic article exists &mdash; audit for March 28 drone attack, fuel tank fire, radar damage.</div><div class="kw-tags"><span class="tag t-bo">BREAKOUT</span><span class="tag t-ap">AIRPORT STATUS</span><span class="tag t-pa">AUDIT</span><span class="tag t-nd">NEWS-DERIVED</span></div></div><div class="kw-meta"><div class="kw-regions">KW, SA, AE, EG, BH</div></div></div>
+
+  <div class="keyword-card p-write"><div class="kw-rank">7</div><div class="kw-body"><div class="kw-arabic">اغلاق مطار البحرين</div><div class="kw-translit">ighlaq matar albahrain</div><div class="kw-note">Bahrain airport closure. 91 cancellations on Mar 28 (75-80% daily ops). Gulf Air relocated to Dammam. Strong Arabic content opportunity.</div><div class="kw-tags"><span class="tag t-bo">BREAKOUT</span><span class="tag t-ap">AIRPORT STATUS</span><span class="tag t-pw">WRITE NOW</span><span class="tag t-nd">NEWS-DERIVED</span></div></div><div class="kw-meta"><div class="kw-regions">BH, SA, AE, KW, EG</div></div></div>
+
+  <div class="keyword-card p-write"><div class="kw-rank">8</div><div class="kw-body"><div class="kw-arabic">ضرب مطار البحرين</div><div class="kw-translit">darb matar albahrain</div><div class="kw-note">Bahrain airport strike/attack. Combine with "اغلاق مطار البحرين" in same Arabic status article for full keyword coverage.</div><div class="kw-tags"><span class="tag t-bo">BREAKOUT</span><span class="tag t-cr">CRISIS / AIRPORT</span><span class="tag t-pw">WRITE NOW</span><span class="tag t-nd">NEWS-DERIVED</span></div></div><div class="kw-meta"><div class="kw-regions">BH, SA, AE, EG, JO</div></div></div>
+
+  <div class="keyword-card p-write"><div class="kw-rank">9</div><div class="kw-body"><div class="kw-arabic">إغلاق مطار بغداد الدولي</div><div class="kw-translit">ighlaq matar baghdad aldawli</div><div class="kw-note">Baghdad International Airport closure. Breakout query tied to Iraq airspace closure. Arabic article opportunity for Iraqi/diaspora audience.</div><div class="kw-tags"><span class="tag t-bo">BREAKOUT</span><span class="tag t-ap">AIRPORT STATUS</span><span class="tag t-pw">WRITE NOW</span><span class="tag t-nd">NEWS-DERIVED</span></div></div><div class="kw-meta"><div class="kw-regions">IQ, SA, AE, JO, SE</div></div></div>
+
+  <div class="keyword-card p-audit"><div class="kw-rank">10</div><div class="kw-body"><div class="kw-arabic">هل تم ضرب مطار دبي</div><div class="kw-translit">hal tam darb matar dubai</div><div class="kw-note">"Was Dubai airport struck?" &mdash; conversational query showing uncertainty. Include FAQ-style answers in Arabic airport status content.</div><div class="kw-tags"><span class="tag t-bo">BREAKOUT</span><span class="tag t-cr">CRISIS / AIRPORT</span><span class="tag t-pa">AUDIT</span><span class="tag t-nd">NEWS-DERIVED</span></div></div><div class="kw-meta"><div class="kw-regions">AE, SA, EG, DE, UK</div></div></div>
+
+  <div class="keyword-card p-audit"><div class="kw-rank">11</div><div class="kw-body"><div class="kw-arabic">المجال الجوي القطري</div><div class="kw-translit">al-majal al-jawwi alqatari</div><div class="kw-note">Qatari airspace. Hamad International at ~30% capacity, 70% departures cancelled. Cover Qatar airspace corridor status in Arabic.</div><div class="kw-tags"><span class="tag t-bo">BREAKOUT</span><span class="tag t-cr">CRISIS / AIRSPACE</span><span class="tag t-pa">AUDIT</span><span class="tag t-nd">NEWS-DERIVED</span></div></div><div class="kw-meta"><div class="kw-regions">QA, SA, AE, KW, EG</div></div></div>
+
+  <div class="keyword-card p-audit"><div class="kw-rank">12</div><div class="kw-body"><div class="kw-arabic">المجال الجوي الكويتي</div><div class="kw-translit">al-majal al-jawwi alkuwaiti</div><div class="kw-note">Kuwaiti airspace. Fully closed. Complement Kuwait airport closure article with airspace-specific Arabic content.</div><div class="kw-tags"><span class="tag t-bo">BREAKOUT</span><span class="tag t-cr">CRISIS / AIRSPACE</span><span class="tag t-pa">AUDIT</span><span class="tag t-nd">NEWS-DERIVED</span></div></div><div class="kw-meta"><div class="kw-regions">KW, SA, AE, IQ, BH</div></div></div>
+
+  <div class="keyword-card p-audit"><div class="kw-rank">13</div><div class="kw-body"><div class="kw-arabic">المجال الجوي الاردني</div><div class="kw-translit">al-majal al-jawwi al-urduni</div><div class="kw-note">Jordanian airspace. Key transit corridor. Arabic searchers want routing alternatives when Gulf airspace is closed.</div><div class="kw-tags"><span class="tag t-bo">BREAKOUT</span><span class="tag t-cr">CRISIS / AIRSPACE</span><span class="tag t-pa">AUDIT</span><span class="tag t-nd">NEWS-DERIVED</span></div></div><div class="kw-meta"><div class="kw-regions">JO, SA, AE, IQ, PS</div></div></div>
+
+  <div class="keyword-card p-high"><div class="kw-rank">14</div><div class="kw-body"><div class="kw-arabic">هل السفر آمن</div><div class="kw-translit">hal al-safar aman</div><div class="kw-note">"Is travel safe?" Sustained interest from Mar 8 onward. Strong diaspora signal (UK, Germany). Create umbrella Arabic safety guide or audit existing ones per country.</div><div class="kw-tags"><span class="tag t-bo">BREAKOUT</span><span class="tag t-sa">CRISIS / SAFETY</span><span class="tag t-ph">HIGH PRIORITY</span><span class="tag t-nd">NEWS-DERIVED</span></div></div><div class="kw-meta"><div class="kw-regions">SA, AE, EG, DE, UK</div></div></div>
+
+  <div class="keyword-card p-high"><div class="kw-rank">15</div><div class="kw-body"><div class="kw-arabic">جدول رحلات مطار دبي اليوم</div><div class="kw-translit">jadwal rihlat matar dubai alyawm</div><div class="kw-note">Dubai airport flight schedule today. Top query (score 100) for "مطار دبي اليوم". Product integration &mdash; link to Wego flight tracker from Arabic articles.</div><div class="kw-tags"><span class="tag t-hi">TOP QUERY (100)</span><span class="tag t-pr">WEGO PRODUCT</span><span class="tag t-ph">HIGH PRIORITY</span><span class="tag t-nd">NEWS-DERIVED</span></div></div><div class="kw-meta"><div class="kw-regions">AE, SA, EG, JO</div></div></div>
+
+  <div class="keyword-card p-high"><div class="kw-rank">16</div><div class="kw-body"><div class="kw-arabic">ضرب مطار دبي اليوم</div><div class="kw-translit">darb matar dubai alyawm</div><div class="kw-note">Dubai airport strike today. Score 25 related to "مطار دبي اليوم". Time-sensitive crisis query &mdash; incorporate into Dubai airport status article.</div><div class="kw-tags"><span class="tag t-hi">SCORE: 25</span><span class="tag t-cr">CRISIS / AIRPORT</span><span class="tag t-ph">HIGH PRIORITY</span><span class="tag t-nd">NEWS-DERIVED</span></div></div><div class="kw-meta"><div class="kw-regions">AE, SA, EG, KW</div></div></div>
+
+  <div class="keyword-card p-high"><div class="kw-rank">17</div><div class="kw-body"><div class="kw-arabic">هل مطار الكويت مفتوح</div><div class="kw-translit">hal matar alkuwait maftuh</div><div class="kw-note">Is Kuwait airport open? Spike on Mar 30. People checking daily. Use as H1/title for Arabic Kuwait airport status article.</div><div class="kw-tags"><span class="tag t-sp">SPIKE (100)</span><span class="tag t-ap">AIRPORT STATUS</span><span class="tag t-ph">HIGH PRIORITY</span><span class="tag t-nd">NEWS-DERIVED</span></div></div><div class="kw-meta"><div class="kw-regions">KW, SA, AE, BH</div></div></div>
+
+  <div class="keyword-card p-high"><div class="kw-rank">18</div><div class="kw-body"><div class="kw-arabic">مطار الكويت الدولي</div><div class="kw-translit">matar alkuwait aldawli</div><div class="kw-note">Kuwait International Airport. Breakout cross-referenced from "مطار البحرين" &mdash; shows cross-airport search behavior.</div><div class="kw-tags"><span class="tag t-bo">BREAKOUT</span><span class="tag t-ap">AIRPORT STATUS</span><span class="tag t-ph">HIGH PRIORITY</span><span class="tag t-nd">NEWS-DERIVED</span></div></div><div class="kw-meta"><div class="kw-regions">KW, SA, AE, BH, EG</div></div></div>
+
+  <div class="keyword-card p-high"><div class="kw-rank">19</div><div class="kw-body"><div class="kw-arabic">حريق مطار الكويت</div><div class="kw-translit">hariq matar alkuwait</div><div class="kw-note">Kuwait airport fire. Breakout topics (حريق/خزان) &mdash; 58 hours of firefighting after drone attack on fuel tanks. Unique angle for Arabic crisis content.</div><div class="kw-tags"><span class="tag t-bo">BREAKOUT</span><span class="tag t-cr">CRISIS / AIRPORT</span><span class="tag t-ph">HIGH PRIORITY</span><span class="tag t-nd">NEWS-DERIVED</span></div></div><div class="kw-meta"><div class="kw-regions">KW, SA, AE, BH</div></div></div>
+
+  <div class="keyword-card p-med"><div class="kw-rank">20</div><div class="kw-body"><div class="kw-arabic">مطار دبي الدولي</div><div class="kw-translit">matar dubai aldawli</div><div class="kw-note">Dubai International Airport (formal name). Score 87 as top related query. Include as secondary keyword in Dubai airport Arabic content.</div><div class="kw-tags"><span class="tag t-hi">SCORE: 87</span><span class="tag t-ap">AIRPORT STATUS</span><span class="tag t-pm">MEDIUM</span><span class="tag t-cat">CATEGORY</span></div></div><div class="kw-meta"><div class="kw-regions">AE, SA, EG</div></div></div>
+
+  <div class="keyword-card p-med"><div class="kw-rank">21</div><div class="kw-body"><div class="kw-arabic">هل مطارات السعودية مغلقة</div><div class="kw-translit">hal matarat alsaudiyya mughlqa</div><div class="kw-note">Are Saudi airports closed? Saudi airports are OPEN with cancellations. Content opportunity to clarify &mdash; Riyadh, Jeddah, Dammam, Medina all operational.</div><div class="kw-tags"><span class="tag t-sp">CONFIRMED DEMAND</span><span class="tag t-ap">AIRPORT STATUS</span><span class="tag t-pm">MEDIUM</span><span class="tag t-nd">NEWS-DERIVED</span></div></div><div class="kw-meta"><div class="kw-regions">SA, AE, EG, KW, JO</div></div></div>
+
+  <div class="keyword-card p-med"><div class="kw-rank">22</div><div class="kw-body"><div class="kw-arabic">مطار حمد الدولي</div><div class="kw-translit">matar hamad aldawli</div><div class="kw-note">Hamad International Airport (Doha). Operating at ~30% capacity. Qatar airspace has a flight corridor but 70% departures cancelled.</div><div class="kw-tags"><span class="tag t-sp">CONFIRMED DEMAND</span><span class="tag t-ap">AIRPORT STATUS</span><span class="tag t-pm">MEDIUM</span><span class="tag t-nd">NEWS-DERIVED</span></div></div><div class="kw-meta"><div class="kw-regions">QA, SA, AE, EG</div></div></div>
+
+  <div class="keyword-card p-med"><div class="kw-rank">23</div><div class="kw-body"><div class="kw-arabic">مطار أبوظبي</div><div class="kw-translit">matar abu dhabi</div><div class="kw-note">Abu Dhabi airport. Limited operations resumed. Content gap &mdash; most Arabic focus on Dubai, but Zayed International also affected.</div><div class="kw-tags"><span class="tag t-sp">CONFIRMED DEMAND</span><span class="tag t-ap">AIRPORT STATUS</span><span class="tag t-pm">MEDIUM</span><span class="tag t-nd">NEWS-DERIVED</span></div></div><div class="kw-meta"><div class="kw-regions">AE, SA, EG, JO</div></div></div>
+
+  <div class="keyword-card p-med"><div class="kw-rank">24</div><div class="kw-body"><div class="kw-arabic">حجم البحرين</div><div class="kw-translit">hajm albahrain</div><div class="kw-note">Size of Bahrain. Breakout related query from "مطار البحرين" &mdash; curiosity-driven traffic from people researching Bahrain during the crisis.</div><div class="kw-tags"><span class="tag t-bo">BREAKOUT</span><span class="tag t-de">DESTINATION</span><span class="tag t-pm">MEDIUM</span><span class="tag t-nd">NEWS-DERIVED</span></div></div><div class="kw-meta"><div class="kw-regions">BH, SA, AE</div></div></div>
+
+  <h2 class="section-title">&#x1F5C2; Thematic Clusters</h2>
+
+  <div class="clusters-grid">
+    <div class="cluster-card">
+      <div class="cluster-title">&#x2708;&#xFE0F; Dubai Airport Status</div>
+      <div class="cluster-desc">The largest cluster &mdash; 7 Arabic query variants asking if Dubai airport is open, closed, or attacked. One comprehensive article can capture all.</div>
+      <div class="cluster-tags">
+        <span class="cluster-kw"><span class="g">Breakout</span> ضرب مطار دبي</span>
+        <span class="cluster-kw"><span class="g">Breakout</span> مطار دبي مفتوح</span>
+        <span class="cluster-kw"><span class="g">Breakout</span> هل مطار دبي مغلق</span>
+        <span class="cluster-kw"><span class="g">Breakout</span> مطار دبي شغال</span>
+        <span class="cluster-kw"><span class="g">Breakout</span> هل تم ضرب مطار دبي</span>
+        <span class="cluster-kw"><span class="g">100</span> جدول رحلات مطار دبي اليوم</span>
+        <span class="cluster-kw"><span class="g">87</span> مطار دبي الدولي</span>
+      </div>
+    </div>
+
+    <div class="cluster-card">
+      <div class="cluster-title">&#x1F6AB; Gulf Airport Closures</div>
+      <div class="cluster-desc">Airport closure queries for Kuwait, Bahrain, Baghdad. Each needs its own Arabic article. Kuwait most urgent &mdash; only fully closed commercial airport.</div>
+      <div class="cluster-tags">
+        <span class="cluster-kw"><span class="g">Breakout</span> إغلاق مطار الكويت</span>
+        <span class="cluster-kw"><span class="g">Breakout</span> اغلاق مطار البحرين</span>
+        <span class="cluster-kw"><span class="g">Breakout</span> إغلاق مطار بغداد الدولي</span>
+        <span class="cluster-kw"><span class="g">Breakout</span> ضرب مطار البحرين</span>
+        <span class="cluster-kw"><span class="g">Breakout</span> حريق مطار الكويت</span>
+        <span class="cluster-kw"><span class="g">Spike</span> هل مطار الكويت مفتوح</span>
+      </div>
+    </div>
+
+    <div class="cluster-card">
+      <div class="cluster-title">&#x1F30D; Airspace Status</div>
+      <div class="cluster-desc">Country-specific airspace queries. One Arabic "airspace tracker" article can cover all zones, updated daily.</div>
+      <div class="cluster-tags">
+        <span class="cluster-kw"><span class="g">Breakout</span> فتح المجال الجوي</span>
+        <span class="cluster-kw"><span class="g">Breakout</span> المجال الجوي القطري</span>
+        <span class="cluster-kw"><span class="g">Breakout</span> المجال الجوي الكويتي</span>
+        <span class="cluster-kw"><span class="g">Breakout</span> المجال الجوي الاردني</span>
+      </div>
+    </div>
+
+    <div class="cluster-card">
+      <div class="cluster-title">&#x1F6E1;&#xFE0F; Travel Safety</div>
+      <div class="cluster-desc">Broad safety queries from Arabic speakers worldwide &mdash; especially the diaspora in Europe. Wego's Arabic safety article template fits perfectly.</div>
+      <div class="cluster-tags">
+        <span class="cluster-kw"><span class="g">Breakout</span> هل السفر آمن</span>
+        <span class="cluster-kw">هل مطارات السعودية مغلقة</span>
+      </div>
+    </div>
+
+    <div class="cluster-card">
+      <div class="cluster-title">&#x1F3E2; Individual Airport Hubs</div>
+      <div class="cluster-desc">Specific airport queries beyond Dubai and Kuwait. Each can be standalone or part of a broader Gulf airports Arabic status page.</div>
+      <div class="cluster-tags">
+        <span class="cluster-kw">مطار حمد الدولي</span>
+        <span class="cluster-kw">مطار أبوظبي</span>
+        <span class="cluster-kw"><span class="g">Breakout</span> مطار الكويت الدولي</span>
+        <span class="cluster-kw"><span class="g">87</span> مطار دبي الدولي</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <strong>Data Source:</strong> Google Trends (trends.google.com) &bull; <strong>Date:</strong> 31 March 2026<br>
+    <strong>Scope:</strong> Arabic-language queries (hl=ar), Worldwide &bull; <strong>Timeframes:</strong> 7-day &amp; 90-day windows<br>
+    <strong>Seeds Researched:</strong> مطار دبي اليوم &bull; مطار الكويت &bull; هل مطار الكويت مفتوح &bull; إغلاق مطار &bull; مطار البحرين &bull; المجال الجوي &bull; مطار دبي &bull; هل السفر آمن<br><br>
+    Research focused on Arabic-language queries worldwide (MENA + diaspora). "Breakout" = 5,000%+ growth.
+  </div>
+
+</div>
+</body>
+</html>
